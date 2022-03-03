@@ -7,6 +7,7 @@
 #####################################################
 
 # Importa pacote de comunicação serial
+from ast import While
 import time
 import serial
 
@@ -20,8 +21,8 @@ class fisica(object):
     def __init__(self, name):
         self.name        = name
         self.port        = None
-        self.baudrate    = 115200
-        # self.baudrate    = 9600
+        # self.baudrate    = 115200
+        self.baudrate    = 9600
         self.bytesize    = serial.EIGHTBITS
         self.parity      = serial.PARITY_NONE
         self.stop        = serial.STOPBITS_ONE
@@ -84,9 +85,10 @@ class fisica(object):
             fora do ambiente linux, isso tenta corrigir
             em parte esses erros. Melhorar futuramente."""
             "muitas vezes um flush no inicio resolve!"
+            self.port.flush()
             rxBufferDecoded = self.decode(rxBufferValid)
             nRx = len(rxBuffer)
             return(rxBufferDecoded, nRx)
         except :
-            print("[ERRO] interfaceFisica, read, decode. buffer : {}".format(rxBufferValid))
+            # print("[ERRO] interfaceFisica, read, decode. buffer : {}".format(rxBufferValid))
             return(b"", 0)
