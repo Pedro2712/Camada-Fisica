@@ -2,10 +2,11 @@ from enlace import *
 import random
 import time
 import numpy as np
+import os
 
-serialName = "COM3"
+serialName = "COM4"
 
-# Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final 
+# Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final
 def calcula_tempo(tempo_i, tempo_f):
     hora_i    = int(tempo_i.split()[3][:2]) * 3600
     minuto_i  = int(tempo_i.split()[3][3:5]) * 60
@@ -25,15 +26,11 @@ def calcula_tempo(tempo_i, tempo_f):
 
     return f"{horas}:{minutos}:{segundos}"
 
-# Calcula os segundos totais da transmissão dos dados
-def segundos_totais(temp):
-    horas      = int(temp[:2])
-    minutos    = int(temp[3:5])
-    segundos   = int(temp[6:])
-
-    segundos_f = horas * 3600 + minutos * 60 + segundos
-
-    return segundos_f
+def tempo_decorrido(temp):
+    os.system("cls")
+    print ("A transmissão vai começar!")
+    print ("A recepção vai começar!")
+    print (f"Tempo decorrido é: {temp}")
 
 # Sorteia os comandos que serão enviados para o server
 def sorteia_comandos():
@@ -44,6 +41,8 @@ def sorteia_comandos():
     for i in range(sorteado):
         index = random.randint(0, 5)
         lista_comandos.append(comandos[index])
+    bit_de_termino= "E0"
+    lista_comandos.append (bit_de_termino)
     return bytes('/'.join(lista_comandos).encode())
 
 def main():
@@ -56,30 +55,19 @@ def main():
         com1.enable()
 
         # Faça aqui uma conferência do tamanho do seu txBuffer, ou seja, quantos bytes serão enviados.
-        print ("O número de comandos é de {}".format(sorteado))
-
-        print("A transmissão vai começar!")
+        os.system("cls")
         tempo_i= time.ctime()
         com1.sendData(np.asarray(txBuffer))
-
-        print ("A recepção vai começar!")
-        # Acesso aos bytes recebidos
-        rxBuffer, nRx = com1.getData()
-        n_rxBuffer= bytes([len(str(rxBuffer).split('/'))])     # Calcula a quantidade de comandos enviados e o transforma em hexadecimal
-        print("-" * 50)
-
-        #########################################################
-        print("A transmissão vai começar de novo!")
-        com1.sendData(np.asarray(n_rxBuffer))                  # Envia a quantidade de comandos para o client em hexadecimal
+        time.sleep(0.1)
         
-        print ("A recepção vai começar de novo!")
-        rxBuffer_again, nRx_2 = com1.getData()                 # Recebe a quantidade de comandos em hexadecimal do serve
+        print ("A recepção vai começar!")
+        # Recebe a quantidade de comandos em hexadecimal do serve
+        rxBuffer_again, nRx_2 = com1.getData(1)
 
         # Transforma a quantidade de comandos em decimal
-        transforma = int.from_bytes(rxBuffer_again, 'big')
+        transforma = int.from_bytes(rxBuffer_again, 'big') # Para o teste dar errado b'x04'
         n_rxBuffer_again= f"\033[92mSuccess:\033[0m\nO número de comandos recebidos é: {transforma}" if transforma == sorteado \
                             else "\033[91mFail:\033[0m\nO Server recebeu os comandos com problema de interpretação"
-        #########################################################
 
         tempo_f     = time.ctime()
         tempo_total = calcula_tempo(tempo_i, tempo_f)
@@ -87,6 +75,7 @@ def main():
         # Encerra comunicação
         print("-" * 50)
         print("Comunicação encerrada!")
+        print ("O número de comandos sorteados foi de: {}".format(sorteado))
         print(f"Tempo decorrido foi de: {tempo_total}")
         print(f"{n_rxBuffer_again}")
         print("-" * 50)
