@@ -13,6 +13,9 @@ import time
 # Threads
 import threading
 import enlaceTx as tx
+import aplicacao as ap
+
+import time
 
 # Class
 class RX(object):
@@ -65,15 +68,21 @@ class RX(object):
         # Pausa o thread
         self.threadPause()
         b           = self.buffer # Salva os dados do buffer na variavel b
-        self.clearBuffer() # Zera o buffer
+        # self.clearBuffer() # Zera o buffer
         self.threadResume()
         return(b)
 
-    def getNData(self):
-        # Espera passar todos os dados da foto para sair do while
-        # while(self.getBufferLen() < size):
-        #     time.sleep(0.05)
-        time.sleep(2)
+    def getNData(self, size):
+        time_i= time.ctime()
+        while self.getBufferLen() < size:
+            time_f= time.ctime()
+            tempo_total= ap.calcula_tempo(time_i, time_f)
+            ap.tempo_decorrido(tempo_total)
+            if tempo_total == "00:00:10":
+                print("-" * 50)
+                print ("Time Out", "\U0001F615")
+                break
+            time.sleep(0.9)
         return(self.getBuffer())
 
     def clearBuffer(self):
