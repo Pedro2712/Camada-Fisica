@@ -6,7 +6,7 @@ import numpy as np
 import interfaceFisica
 import os
 
-serialName = "COM3"
+serialName = "COM5"
 
 # Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final 
 def calcula_tempo(tempo_i, tempo_f):
@@ -46,6 +46,18 @@ def recebendo():
     os.system("cls")
     print ("recebendo")
 
+def desmembramento(rxBuffer):
+    head = rxBuffer[:10]
+    tam_pacotes = head[1]
+    playload = rxBuffer[10:tam_pacotes+10]
+    eop = rxBuffer[tam_pacotes+10:]
+
+    estilo = head[0].to_bytes(1,byteorder='big')
+    contador = int(head[2:5])
+    tamanho = int(head[5:8])
+
+    return head, playload, eop, estilo, contador, tamanho, tam_pacotes
+
 def main():
     
     try:
@@ -55,26 +67,50 @@ def main():
         com1.enable()
         
         os.system("cls")
-        print ("A recepção vai começar!")
+        print ("A recepção vai começar!") 
         # Acesso aos bytes recebidos
-        bit_de_termino= "E0"
+        # bit_de_termino= ""
+        mensagem =[]
+        cont = 0
         while True:
-            rxBuffer, nRx = com1.getData(1)
-            recebendo()
-            ultimo_bit= str(rxBuffer).split('/')[-1][:-1:]
-            if ultimo_bit == bit_de_termino:
-                break
-            time.sleep(1.5)
-        os.system("cls")
-        
-        # Calcula a quantidade de comandos enviados e o transforma em hexadecimal
-        n_rxBuffer= bytes([len(str(rxBuffer).split('/'))-1])
-        print("-" * 50)
+            while True:
+                rxBuffer, nRx = com1.getData(1)
+                recebendo()
+                if rxBuffer.endswith(b'\xff\xff\xff\xff'):
+                    break
+                time.sleep(0.5)
+            
+            head, playload, eop, estilo, contador, tamanho, tam_pacotes = desmembramento(rxBuffer)
 
-        print("A transmissão vai começar")
-        # Envia a quantidade de comandos para o client em hexadecimal
-        print(f"Enviando o número de comandos de: {len(str(rxBuffer).split('/'))-1}")
-        com1.sendData(np.asarray(n_rxBuffer))
+            # if estilo == b'a':
+
+            #     #FAZER O SEND DATA
+            #     continue
+
+            if estilo == b'b':
+                cont+=1
+                #FAZER SEND
+                mensagem.append(playload)
+                if cont == contador:
+                    break
+
+
+
+
+            os.system("cls")
+        
+        print(mensagem)
+        print(len(mensagem))
+        # print(mensagem.join(""))
+        
+        # # Calcula a quantidade de comandos enviados e o transforma em hexadecimal
+        # n_rxBuffer= bytes([len(str(rxBuffer).split('/'))-1])
+        # print("-" * 50)
+
+        # print("A transmissão vai começar")
+        # # Envia a quantidade de comandos para o client em hexadecimal
+        # print(f"Enviando o número de comandos de: {len(str(rxBuffer).split('/'))-1}")
+        # com1.sendData(np.asarray(n_rxBuffer))
 
         # Encerra comunicação
         print("-" * 50)
