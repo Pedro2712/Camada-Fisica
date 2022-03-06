@@ -3,9 +3,16 @@ from enlace import *
 import random
 import time
 import numpy as np
+import math
 import os
 
 serialName = "COM4"
+
+def tempo_decorrido(temp):
+    os.system("cls")
+    print ("A transmissão vai começar!")
+    print ("A recepção vai começar!")
+    print (f"Tempo decorrido é: {temp}")
 
 # Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final
 def calcula_tempo(tempo_i, tempo_f):
@@ -21,59 +28,40 @@ def calcula_tempo(tempo_i, tempo_f):
 
     tempo= total_f - total_i
     
-    horas     = int((tempo/3600)) if int((tempo/3600)) >= 10 else f"0{int((tempo/3600))}"
-    minutos   = int((tempo%3600)/60) if int((tempo%3600)/60) >= 10 else f"0{int((tempo%3600)/60)}"
-    segundos  = (tempo%3600)%60 if (tempo%3600)%60 >= 10 else f"0{(tempo%3600)%60}"
+    horas     = str(int((tempo/3600))).rjust(2, '0')
+    minutos   = str(int((tempo%3600)/60)).rjust(2, '0')
+    segundos  = str((tempo%3600)%60).rjust(2, '0')
 
     return f"{horas}:{minutos}:{segundos}"
 
-def tempo_decorrido(temp):
-    os.system("cls")
-    print ("A transmissão vai começar!")
-    print ("A recepção vai começar!")
-    print (f"Tempo decorrido é: {temp}")
-
-# Sorteia os comandos que serão enviados para o server
-def sorteia_comandos():
-    global sorteado
-    comandos= ["00 FF 00 FF", "00 FF FF 00", "FF", "00", "FF 00", "00 FF"]
-    sorteado= random.randint(10, 30)
-    lista_comandos= []
-    for i in range(sorteado):
-        index = random.randint(0, 5)
-        lista_comandos.append(comandos[index])
-    bit_de_termino= "E0"
-    lista_comandos.append (bit_de_termino)
-    return bytes('/'.join(lista_comandos).encode())
-
-def header(contador, tamanho, tam_pacotes, estilo):
-    # 3 contador, 3 tamanho, 1 tam_pacotes, 1 estilo, 2 sem nada
-    head= bytes(f"{contador}{tamanho}xx", encoding= "utf-8")
-    head= bytes(estilo, encoding= "utf-8") + tam_pacotes.to_bytes(1, byteorder='big') + head
+def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "a"):
+    ############################################################################################
+    # Ordem adotado no Head: estilo, tam_payload, contador, tamanho, desconhecido, deconhecido #
+    ############################################################################################
+    # 3 contador, 3 tamanho, 1 tam_pacotes, 1 estilo, 2 desconhecidos
+    head= bytes(estilo, encoding= "utf-8") + tam_payload.to_bytes(1, byteorder='big') + bytes(f"{contador}{tamanho}--", encoding= "utf-8")
     return head
 
     
-def cria_pacote(mensagem, estilo):
+def cria_pacote(mensagem= "", estilo= "a"):
     mensagem= bytes(mensagem, encoding= "utf-8")
-    lista_pacotes= []
-    tamanho= int(len(mensagem)/114)
-    if len(mensagem) % 114 != 0:  
-        tamanho += 1
-    tamanho= str(tamanho).rjust(3, '0')
+    tamanho= str(math.ceil(len(mensagem)/114)).rjust(3, '0')
 
-    contador= 1
-    pacote= b''
+    pacote= b''; contador= 1; eop= b'\xff\xff\xff\xff'
+    lista_datagrama= [header() + pacote + eop]
     for count, i in enumerate(mensagem):
         pacote+= i.to_bytes(1, byteorder='big')
         if len(pacote) == 114 or count == len(mensagem)-1:
             contador= str(contador).rjust(3, '0')
             head= header(contador, tamanho, len(pacote), estilo)
-            eop= b'\xff\xff\xff\xff'
+            
             datagrama= head + pacote + eop
-            lista_pacotes.append(datagrama)
+            lista_datagrama.append(datagrama)
+            
             pacote= b''
             contador= int(contador) + 1
-    return lista_pacotes
+        if count == len(mensagem)-1: lista_datagrama.pop(0)
+    return lista_datagrama
 
 def main():
     
