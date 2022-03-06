@@ -1,9 +1,5 @@
-from sqlalchemy import null, true
 from enlace import *
-import random
 import time
-import numpy as np
-import interfaceFisica
 import math
 import os
 

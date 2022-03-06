@@ -1,6 +1,4 @@
-from pyrsistent import b
 from enlace import *
-import random
 import time
 import numpy as np
 import math
