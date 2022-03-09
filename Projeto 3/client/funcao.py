@@ -29,7 +29,7 @@ def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "a"):
     return head
 
     
-def cria_pacote(mensagem= "", estilo= "a"):
+def cria_pacote(mensagem= "", estilo= "v"):
     mensagem= bytes(mensagem, encoding= "utf-8")
     tamanho= str(math.ceil(len(mensagem)/114)).rjust(3, '0')
 
