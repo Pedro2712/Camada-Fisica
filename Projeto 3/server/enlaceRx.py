@@ -34,7 +34,7 @@ class RX(object):
                     self.buffer += rxTemp
                 time.sleep(0.01)
 
-    def threadStart(self):       
+    def threadStart(self):
         self.thread = threading.Thread(target=self.thread, args=())
         self.thread.start()
 

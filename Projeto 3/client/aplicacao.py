@@ -3,14 +3,9 @@ import time
 import numpy as np
 import os
 from funcao import *
+from animacao import Animacao
 
 serialName = "COM3"
-
-def tempo_decorrido(temp):
-    os.system("cls")
-    print ("A transmissão vai começar!")
-    print ("A recepção vai começar!")
-    print (f"Tempo decorrido é: {temp}")
 
 mensagem = """sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaiba
 sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
@@ -31,6 +26,8 @@ def main():
     
     try:
         com1 = enlace(serialName)
+        recebe = Animacao()
+        recebe.__ini__()
         com1.enable()
 
         os.system("cls")
@@ -47,15 +44,12 @@ def main():
         while True:
             while True:
                 rxBuffer, nRx = com1.getData(1)
-                # recebe.enable()
+                if com1.rx.condicao: recebe.enable()
                 if rxBuffer.endswith(bit_de_termino):
+                    com1.rx.cond()
                     com1.clear(len(rxBuffer))
                     break
-                time.sleep(0.5)
-            
-            # print (rxBuffer)
-            # print (desmembramento(rxBuffer))
-            # break
+                time.sleep(0.05)
             head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
             if estilo == b'v': # Tá vivo?
@@ -70,6 +64,8 @@ def main():
                 if index > len(txBuffer) - 1:
                     stop= cria_pacote(estilo= "d")
                     com1.sendData(np.asarray(stop[0]))
+                    recebe.disable()
+                    time.sleep(1.8)
                     break
                 com1.sendData(np.asarray(txBuffer[index]))
                 index+= 1
@@ -93,26 +89,19 @@ def main():
 
             elif estilo == b'd': # Deu tudo certo!
                 # Print Deu tudo certo!
+                recebe.disable()
+                time.sleep(1)
                 print("Deu tudo certo!")
                 break
-            
-        # txBuffer= cria_pacote(mensagem, "b")
-        # os.system("cls")
-        # tempo_i= time.ctime()
-        # print (len(txBuffer))
-        # for i in txBuffer:
-        #     com1.sendData(np.asarray(i))
-        # time.sleep(0.05)
 
         tempo_f     = time.ctime()
         tempo_total = calcula_tempo(tempo_i, tempo_f)
         
-        # # Encerra comunicação
+        # Encerra comunicação
+        os.system("cls")
         print("-" * 50)
         print("Comunicação encerrada!")
-        # print ("O número de comandos sorteados foi de: {}".format(sorteado))
         print(f"Tempo decorrido foi de: {tempo_total}")
-        # print(f"{n_rxBuffer_again}")
         print("-" * 50)
         com1.disable()
         

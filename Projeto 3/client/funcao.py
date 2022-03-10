@@ -1,4 +1,5 @@
 import math
+import os
 
 # Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final
 def calcula_tempo(tempo_i, tempo_f):
@@ -60,3 +61,9 @@ def desmembramento(rxBuffer):
     tamanho = int(head[5:8])
 
     return head, estilo, tam_payload, contador, tamanho, payload, eop
+
+def tempo_decorrido(temp):
+    os.system("cls")
+    print ("A transmissão vai começar!")
+    print ("A recepção vai começar!")
+    print (f"Tempo decorrido é: {temp}")

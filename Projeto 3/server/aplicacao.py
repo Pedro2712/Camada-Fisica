@@ -74,27 +74,23 @@ def main():
                 # Print Deu tudo certo!
                 recebe.disable()
                 time.sleep(1)
+                txBuffer= cria_pacote(estilo= 'd')
+                com1.sendData(np.asarray(txBuffer[0]))
+                time.sleep(0.05)
+                os.system("cls")
                 print("Deu tudo certo!")
                 break
         
-        
-        print(lista_mensagem)
-        print(len(lista_mensagem))
-        # print(mensagem.join(""))
-        
-        # # Calcula a quantidade de comandos enviados e o transforma em hexadecimal
-        # n_rxBuffer= bytes([len(str(rxBuffer).split('/'))-1])
-        # print("-" * 50)
-
-        # print("A transmissão vai começar")
-        # # Envia a quantidade de comandos para o client em hexadecimal
-        # print(f"Enviando o número de comandos de: {len(str(rxBuffer).split('/'))-1}")
-        # com1.sendData(np.asarray(n_rxBuffer))
+        frase= b''
+        for i in lista_mensagem:
+            frase= frase + i
+        frase= frase.decode("utf-8")
 
         # Encerra comunicação
         print("-" * 50)
         print("Comunicação encerrada!")
         print("-" * 50)
+        print(f"A frase enviada foi:\n{frase}")
         com1.disable()
         
     except Exception as erro:

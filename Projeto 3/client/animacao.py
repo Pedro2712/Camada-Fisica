@@ -7,24 +7,24 @@ class Animacao:
     def __ini__(self):
         self.valor= True
 
-    def recebendo(self):
+    def enviando(self):
         while self.valor:
             os.system("cls")
-            print ("recebendo.")
+            print ("enviando.")
             time.sleep(0.4)
             os.system("cls")
-            print ("recebendo..")
+            print ("enviando..")
             time.sleep(0.4)
             os.system("cls")
-            print ("recebendo...")
+            print ("enviando...")
             time.sleep(0.4)
             os.system("cls")
-            print ("recebendo")
+            print ("enviando")
             time.sleep(0.4)
     
     def enable(self):
-        self.recebendo= threading.Thread(target= self.recebendo, args= ())
-        self.recebendo.start()
+        self.enviando= threading.Thread(target= self.enviando, args= ())
+        self.enviando.start()
     
     def disable(self):
         self.valor= False
