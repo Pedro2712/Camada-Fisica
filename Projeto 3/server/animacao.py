@@ -2,29 +2,32 @@ import os
 import time
 import threading
 
-class animation:
+class Animacao:
 
     def __ini__(self):
-        self.animation_on= True
+        self.valor= True
 
     def recebendo(self):
-        espera= 0.15
-        while self.animation_on:
+        while self.valor:
             os.system("cls")
             print ("recebendo.")
-            time.sleep(espera)
+            time.sleep(0.4)
             os.system("cls")
             print ("recebendo..")
-            time.sleep(espera)
+            time.sleep(0.4)
             os.system("cls")
             print ("recebendo...")
-            time.sleep(espera)
+            time.sleep(0.4)
             os.system("cls")
             print ("recebendo")
+        os.system("cls")
     
     def enable(self):
-        recebe= threading.Thread(target= self.recebendo, args= ())
-        recebe.start()
+        self.recebendo= threading.Thread(target= self.recebendo, args= ())
+        self.recebendo.start()
     
     def disable(self):
-        self.animation_on= False
+        self.valor= False
+    
+    def getValor(self):
+        return self.valor

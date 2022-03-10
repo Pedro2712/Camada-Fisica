@@ -85,5 +85,5 @@ class RX(object):
             time.sleep(0.9)
         return(self.getBuffer())
 
-    def clearBuffer(self):
-        self.buffer = b""
+    def clearBuffer(self, nData):
+        self.buffer = self.buffer[nData:]

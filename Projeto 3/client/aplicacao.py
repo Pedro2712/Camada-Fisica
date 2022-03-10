@@ -1,12 +1,10 @@
-from pyrsistent import b
 from enlace import *
 import time
 import numpy as np
 import os
 from funcao import *
-from animation import animation
 
-serialName = "COM4"
+serialName = "COM3"
 
 def tempo_decorrido(temp):
     os.system("cls")
@@ -14,46 +12,20 @@ def tempo_decorrido(temp):
     print ("A recepção vai começar!")
     print (f"Tempo decorrido é: {temp}")
 
-mensagem = """sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibásapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapuácaibasapucaibasapucaibasaáp
-sapucaiba sapucaiba sapucaibasaáááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááápucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaiba sapucaiba sapucaibasaáááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááápucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaiba sapucaiba sapucaibasaáááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááápucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaiba sapucaiba sapucaibasaáááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááááápucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapááucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapáááucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-v
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba vsapucaiba
-sapucaibasapucaibasapucaibasapucaibasapucaibasap
-"""
+mensagem = """sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaiba
+sapucaiba sapucaiba
+sapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
+sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba fim!!!"""
 
 def main():
     
@@ -67,58 +39,70 @@ def main():
 
         com1.sendData(np.asarray(txBuffer[0]))
         time.sleep(0.05)
-        
 
         bit_de_termino= b'\xff\xff\xff\xff'
-        mensagem =[]
-        cont = 0
+        lista_mensagem =[]
+        count = 1
+        index = 0
         while True:
             while True:
                 rxBuffer, nRx = com1.getData(1)
                 # recebe.enable()
                 if rxBuffer.endswith(bit_de_termino):
+                    com1.clear(len(rxBuffer))
                     break
                 time.sleep(0.5)
             
-            head, estilo, tam_pacotes, contador, tamanho, playload, eop = desmembramento(rxBuffer)
+            # print (rxBuffer)
+            # print (desmembramento(rxBuffer))
+            # break
+            head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
             if estilo == b'v': # Tá vivo?
                 #FAZER O SEND DATA de Pode mandar! == b't'
-                continue
+                txBuffer= cria_pacote(estilo= "t")
+                com1.sendData(np.asarray(txBuffer[0]))
+                time.sleep(0.05)
 
             elif estilo == b't': # Pode mandar!
                 # Fazer o SEND DATA do pacote == b'p'
-                continue
+                txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
+                if index > len(txBuffer) - 1:
+                    stop= cria_pacote(estilo= "d")
+                    com1.sendData(np.asarray(stop[0]))
+                    break
+                com1.sendData(np.asarray(txBuffer[index]))
+                index+= 1
+                time.sleep(0.05)
 
             elif estilo == b'p': # Pacote
-                # Criar variável count para salvar a contagem
-                # Criar lista para salvar o pacote
-                # Verificar se a contagem é igual a count + 1
+                # Criar variável count para salvar a contagem #
+                # Criar lista para salvar o pacote #
+                # Verificar se a contagem é igual a count
                 # Adicionar o pacote para a lista de pacotes
                 # Fazer o SEND DATA Pode mandar! == b't'
                 # Atualizar o count para count+= 1
-                # Criar condição quando o count == contador se entrar na condição 
+                # Criar condição quando o contagem == tamanho se entrar na condição 
                     # Mandar SEND DATA deu tudo certo! == b'd' e break
-                
-                # cont+=1
-                # #FAZER SEND
-                # mensagem.append(playload)
-                # if cont == contador:
-                #     break
-                continue
+                if contador == count:
+                    lista_mensagem.append(payload)
+                    txBuffer= cria_pacote(estilo= 't')
+                    com1.sendData(np.asarray(txBuffer[0]))
+                    time.sleep(0.05)
+                count+= 1
 
             elif estilo == b'd': # Deu tudo certo!
                 # Print Deu tudo certo!
-                # Break
-                continue
-        
-        txBuffer= cria_pacote(mensagem, "b")
-        os.system("cls")
-        tempo_i= time.ctime()
-        print (len(txBuffer))
-        for i in txBuffer:
-            com1.sendData(np.asarray(i))
-        time.sleep(0.05)
+                print("Deu tudo certo!")
+                break
+            
+        # txBuffer= cria_pacote(mensagem, "b")
+        # os.system("cls")
+        # tempo_i= time.ctime()
+        # print (len(txBuffer))
+        # for i in txBuffer:
+        #     com1.sendData(np.asarray(i))
+        # time.sleep(0.05)
 
         tempo_f     = time.ctime()
         tempo_total = calcula_tempo(tempo_i, tempo_f)

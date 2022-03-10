@@ -13,7 +13,7 @@ import time
 # Threads
 import threading
 import enlaceTx as tx
-import aplicacao as ap
+import funcao as fc
 
 # Class
 class RX(object):
@@ -24,6 +24,7 @@ class RX(object):
         self.threadStop  = False
         self.threadMutex = True
         self.READLEN     = 1024
+        self.condicao    = True
 
     def thread(self): 
         while not self.threadStop:
@@ -69,13 +70,19 @@ class RX(object):
         # self.clearBuffer() # Zera o buffer
         self.threadResume()
         return(b)
+    
+    def cond(self):
+        self.condicao= False
+    
+    def getCondicao(self):
+        return self.condicao
 
     def getNData(self, size):
         time_i= time.ctime()
         while self.getBufferLen() < size:
             time_f= time.ctime()
-            tempo_total= ap.calcula_tempo(time_i, time_f)
-            ap.tempo_decorrido(tempo_total)
+            tempo_total= fc.calcula_tempo(time_i, time_f)
+            if self.condicao: fc.tempo_decorrido(tempo_total)
             if tempo_total == "00:00:10":
                 print("-" * 50)
                 print ("Time Out", "\U0001F615")
@@ -83,5 +90,5 @@ class RX(object):
             time.sleep(0.9)
         return(self.getBuffer())
 
-    def clearBuffer(self):
-        self.buffer = b""
+    def clearBuffer(self, nData):
+        self.buffer = self.buffer[nData:]

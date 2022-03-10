@@ -42,3 +42,6 @@ class enlace(object):
     def getData(self, size):
         data = self.rx.getNData(size)
         return(data, len(data))
+    
+    def clear(self, nData):
+        self.rx.clearBuffer(nData)

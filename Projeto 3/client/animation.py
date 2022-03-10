@@ -1,6 +1,7 @@
 import os
 import time
 import threading
+import multiprocessing as mp
 
 class animation:
 
@@ -8,7 +9,8 @@ class animation:
         self.animation_on= True
 
     def recebendo(self):
-        espera= 0.15
+        print (self.animation_on)
+        espera= 0.4
         while self.animation_on:
             os.system("cls")
             print ("recebendo.")
@@ -23,7 +25,7 @@ class animation:
             print ("recebendo")
     
     def enable(self):
-        recebe= threading.Thread(target= self.recebendo, args= ())
+        recebe= mp.Process(target= self.recebendo, args= ())
         recebe.start()
     
     def disable(self):

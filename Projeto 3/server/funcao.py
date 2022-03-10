@@ -1,4 +1,5 @@
 import math
+import os
 
 # Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final
 def calcula_tempo(tempo_i, tempo_f):
@@ -20,7 +21,7 @@ def calcula_tempo(tempo_i, tempo_f):
 
     return f"{horas}:{minutos}:{segundos}"
 
-def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "a"):
+def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "v"):
     ############################################################################################
     # Ordem adotado no Head: estilo, tam_payload, contador, tamanho, desconhecido, deconhecido #
     ############################################################################################
@@ -29,17 +30,17 @@ def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "a"):
     return head
 
     
-def cria_pacote(mensagem= "", estilo= "a"):
+def cria_pacote(mensagem= "", estilo= "v"):
     mensagem= bytes(mensagem, encoding= "utf-8")
     tamanho= str(math.ceil(len(mensagem)/114)).rjust(3, '0')
 
     pacote= b''; contador= 1; eop= b'\xff\xff\xff\xff'
-    lista_datagrama= [header() + pacote + eop]
+    lista_datagrama= [header(estilo=estilo) + pacote + eop]
     for count, i in enumerate(mensagem):
         pacote+= i.to_bytes(1, byteorder='big')
         if len(pacote) == 114 or count == len(mensagem)-1:
             contador= str(contador).rjust(3, '0')
-            head= header(contador, tamanho, len(pacote), estilo)
+            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo)
             
             datagrama= head + pacote + eop
             lista_datagrama.append(datagrama)
@@ -60,3 +61,8 @@ def desmembramento(rxBuffer):
     tamanho = int(head[5:8])
 
     return head, estilo, tam_payload, contador, tamanho, payload, eop
+
+def tempo_decorrido(temp):
+    os.system("cls")
+    print ("A recepção vai começar!")
+    print (f"Tempo decorrido é: {temp}")
