@@ -53,7 +53,7 @@ def cria_pacote(mensagem= "", estilo= "v"):
 def desmembramento(rxBuffer):
     head = rxBuffer[:10]
     tam_payload = head[1]
-    payload = rxBuffer[10:tam_payload+10]
+    payload = rxBuffer[10:-4]
     eop = rxBuffer[tam_payload+10:]
 
     estilo = head[0].to_bytes(1,byteorder='big')
