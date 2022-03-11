@@ -4,7 +4,7 @@ import threading
 
 class Animacao:
 
-    def __ini__(self):
+    def __init__(self):
         self.valor= True
 
     def enviando(self):

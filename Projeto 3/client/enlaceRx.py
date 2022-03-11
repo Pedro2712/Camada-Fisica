@@ -12,8 +12,11 @@ import time
 
 # Threads
 import threading
+
+from pyrsistent import b
 import enlaceTx as tx
 import funcao as fc
+import aplicacao as ap
 
 import time
 
@@ -36,7 +39,7 @@ class RX(object):
                     self.buffer += rxTemp
                 time.sleep(0.01)
 
-    def threadStart(self):       
+    def threadStart(self):
         self.thread = threading.Thread(target=self.thread, args=())
         self.thread.start()
 
@@ -85,10 +88,13 @@ class RX(object):
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
             if self.condicao: fc.tempo_decorrido(tempo_total)
-            if tempo_total == "00:00:10":
-                print("-" * 50)
-                print ("Time Out", "\U0001F615")
-                return
+            if tempo_total == "00:00:05":
+                resposta= input("Quer continuar? ")
+                if resposta== "n":
+                    print("-" * 50)
+                    print ("Time Out", "\U0001F615")
+                    return
+                return b''
             time.sleep(0.9)
         return(self.getBuffer())
 

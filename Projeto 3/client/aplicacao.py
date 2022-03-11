@@ -1,3 +1,4 @@
+from pyrsistent import b
 from enlace import *
 import time
 import numpy as np
@@ -7,52 +8,64 @@ from animacao import Animacao
 
 serialName = "COM3"
 
-mensagem = """sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaiba sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaiba
-sapucaiba sapucaiba
-sapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba
-sapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaibasapucaiba sapucaiba fim!!!"""
+mensagem = """Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
+Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
+completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
+compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
+Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
+Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
+completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
+compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
+Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
+Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
+completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
+compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
+Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
+Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
+completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
+compondo um datagrama. Para isso vamos considerar o seguinte datagrama:"""
+
 
 def main():
     
     try:
         com1 = enlace(serialName)
         recebe = Animacao()
-        recebe.__ini__()
         com1.enable()
 
         os.system("cls")
         tempo_i= time.ctime()
-        txBuffer= cria_pacote()
 
-        com1.sendData(np.asarray(txBuffer[0]))
         time.sleep(0.05)
-
         bit_de_termino= b'\xff\xff\xff\xff'
         lista_mensagem =[]
         count = 1
         index = 0
+        sla= 0
         while True:
             while True:
+                if com1.rx.condicao:
+                    txBuffer= cria_pacote()
+                    com1.sendData(np.asarray(txBuffer[0]))
                 rxBuffer, nRx = com1.getData(1)
-                if com1.rx.condicao: recebe.enable()
                 if rxBuffer.endswith(bit_de_termino):
-                    com1.rx.cond()
+                    if com1.rx.condicao: recebe.enable()
                     com1.clear(len(rxBuffer))
+                    com1.rx.cond()
                     break
                 time.sleep(0.05)
             head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
-            if estilo == b'v': # Tá vivo?
+            if estilo == b'e':
+                print (index, "antes")
+                index = int(payload.decode("utf-8")) - 1
+                print (index, "depois")
+                txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
+                com1.sendData(np.asarray(txBuffer[index]))
+                time.sleep(0.05)
+                index+= 1
+            
+            elif estilo == b'v': # Tá vivo?
                 #FAZER O SEND DATA de Pode mandar! == b't'
                 txBuffer= cria_pacote(estilo= "t")
                 com1.sendData(np.asarray(txBuffer[0]))
@@ -67,25 +80,13 @@ def main():
                     recebe.disable()
                     time.sleep(1.8)
                     break
+                if sla == 5:
+                    print ("entrou")
+                    index= index + 4
+                sla+= 1
                 com1.sendData(np.asarray(txBuffer[index]))
                 index+= 1
                 time.sleep(0.05)
-
-            elif estilo == b'p': # Pacote
-                # Criar variável count para salvar a contagem #
-                # Criar lista para salvar o pacote #
-                # Verificar se a contagem é igual a count
-                # Adicionar o pacote para a lista de pacotes
-                # Fazer o SEND DATA Pode mandar! == b't'
-                # Atualizar o count para count+= 1
-                # Criar condição quando o contagem == tamanho se entrar na condição 
-                    # Mandar SEND DATA deu tudo certo! == b'd' e break
-                if contador == count:
-                    lista_mensagem.append(payload)
-                    txBuffer= cria_pacote(estilo= 't')
-                    com1.sendData(np.asarray(txBuffer[0]))
-                    time.sleep(0.05)
-                count+= 1
 
             elif estilo == b'd': # Deu tudo certo!
                 # Print Deu tudo certo!
