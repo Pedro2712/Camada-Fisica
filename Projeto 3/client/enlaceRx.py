@@ -8,12 +8,12 @@
 ####################################################
 
 # Importa pacote de tempo
+import os
 import time
 
 # Threads
 import threading
 
-from pyrsistent import b
 import enlaceTx as tx
 import funcao as fc
 import aplicacao as ap
@@ -30,6 +30,7 @@ class RX(object):
         self.threadMutex = True
         self.READLEN     = 1024
         self.condicao    = True
+        self.condicao_print    = True
 
     def thread(self): 
         while not self.threadStop:
@@ -77,7 +78,8 @@ class RX(object):
         return(b)
 
     def cond(self):
-        self.condicao= False
+        self.condicao_print = False
+        self.condicao       = False
     
     def getCondicao(self):
         return self.condicao
@@ -87,15 +89,17 @@ class RX(object):
         while self.getBufferLen() < size:
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
-            if self.condicao: fc.tempo_decorrido(tempo_total)
+            if self.condicao_print: fc.tempo_decorrido(tempo_total)
             if tempo_total == "00:00:05":
-                resposta= input("Quer continuar? ")
+                os.system("cls")
+                resposta= input("Servidor inativo. Tentar novamente? s/n ")
                 if resposta== "n":
                     print("-" * 50)
                     print ("Time Out", "\U0001F615")
                     return
+                self.condicao= True
                 return b''
-            time.sleep(0.9)
+            time.sleep(0.05)
         return(self.getBuffer())
 
     def clearBuffer(self, nData):

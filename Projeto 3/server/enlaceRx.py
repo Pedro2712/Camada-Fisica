@@ -83,11 +83,11 @@ class RX(object):
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
             if self.condicao: fc.tempo_decorrido(tempo_total)
-            if tempo_total == "00:02:00":
+            if tempo_total == "00:00:10":
                 print("-" * 50)
                 print ("Time Out", "\U0001F615")
                 return
-            time.sleep(0.9)
+            time.sleep(0.05)
         return(self.getBuffer())
 
     def clearBuffer(self, nData):

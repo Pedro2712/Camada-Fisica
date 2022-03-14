@@ -31,7 +31,7 @@ def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "v"):
 
     
 def cria_pacote(mensagem= "", estilo= "v"):
-    mensagem= bytes(mensagem, encoding= "utf-8")
+    # mensagem= bytes(mensagem, encoding= "utf-8")
     tamanho= str(math.ceil(len(mensagem)/114)).rjust(3, '0')
 
     pacote= b''; contador= 1; eop= b'\xff\xff\xff\xff'
@@ -63,7 +63,4 @@ def desmembramento(rxBuffer):
     return head, estilo, tam_payload, contador, tamanho, payload, eop
 
 def tempo_decorrido(temp):
-    os.system("cls")
-    print ("A transmissão vai começar!")
-    print ("A recepção vai começar!")
-    print (f"Tempo decorrido é: {temp}")
+    print (f'\rTempo decorrido é: {temp}', end = "\r")
