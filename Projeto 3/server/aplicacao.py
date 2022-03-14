@@ -28,23 +28,22 @@ def main():
         while True:
             while True:
                 rxBuffer, nRx = com1.getData(1)
-                if com1.rx.condicao: recebe.enable()
+                # if com1.rx.condicao: recebe.enable()
                 if rxBuffer.endswith(bit_de_termino):
                     com1.rx.cond()
                     com1.clear(len(rxBuffer))
                     break
                 time.sleep(0.05)
             
-            head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
+            head, estilo, tam_payload, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
+            contador_erro=1
             if estilo == b'v': # Tá vivo?
-                #FAZER O SEND DATA de Pode mandar! == b't'
                 txBuffer= cria_pacote(estilo= 't')
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.5)
 
             elif estilo == b't': # Pode mandar!
-                # Fazer o SEND DATA do pacote == b'p'
                 txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
                 if index > len(txBuffer) - 1:
                     stop= cria_pacote(estilo= "d")
@@ -55,25 +54,29 @@ def main():
                 time.sleep(0.05)
 
             elif estilo == b'p': # Pacote
-                # Criar variável count para salvar a contagem #
-                # Criar lista para salvar o pacote #
-                # Verificar se a contagem é igual a count
-                # Adicionar o pacote para a lista de pacotes
-                # Fazer o SEND DATA Pode mandar! == b't'
-                # Atualizar o count para count+= 1
-                # Criar condição quando o contagem == tamanho se entrar na condição 
-                    # Mandar SEND DATA deu tudo certo! == b'd' e break
-                if contador == count:
+                print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
+                print(f"contador do payload: {contador}, contador real: {count}, TOTAL: {tamanho}")
+                print("-"*50)
+                if contador == count and tam_payload == len(payload):
                     lista_mensagem.append(payload)
                     txBuffer= cria_pacote(estilo= 't')
                     com1.sendData(np.asarray(txBuffer[0]))
                     time.sleep(0.05)
-                count+= 1
+                    count+= 1
+                else:
+                    print ("ERRO!")
+                    txBuffer= cria_pacote(mensagem=str(count), estilo= 'e')
+                    com1.sendData(np.asarray(txBuffer[0]))
+                    time.sleep(0.05)
+                    if contador_erro == 3:
+                        break
+                    contador_erro+=1
+                
 
             elif estilo == b'd': # Deu tudo certo!
                 # Print Deu tudo certo!
                 recebe.disable()
-                time.sleep(1)
+                time.sleep(1.5)
                 txBuffer= cria_pacote(estilo= 'd')
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
