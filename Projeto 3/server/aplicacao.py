@@ -6,7 +6,7 @@ from funcao import *
 from animacao import Animacao
 from PIL import Image
 
-serialName = "COM4"
+serialName = "COM5"
 
 mensagem = """sapucaiba sapucaiba"""
 
@@ -79,8 +79,8 @@ def main():
         with open(imageW, 'wb') as f:
             f.write(imagem)
 
-        im= Image.open("./imgs/recebidaCopia.png")
-        im.show()
+        # im= Image.open("./imgs/recebidaCopia.png")
+        # im.show()
 
         # Encerra comunicação
         print("-" * 50)
