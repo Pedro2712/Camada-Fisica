@@ -1,4 +1,3 @@
-from pyrsistent import b
 from enlace import *
 import time
 import numpy as np
@@ -8,23 +7,6 @@ from animacao import Animacao
 
 serialName = "COM3"
 
-mensagem = """Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
-Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
-completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
-compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
-Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
-Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
-completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
-compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
-Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
-Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
-completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
-compondo um datagrama. Para isso vamos considerar o seguinte datagrama:
-Nesse projeto, sua aplicação que exerce o papel de client deverá enviar um arquivo para a aplicação server.
-Esse arquivo deverá ser fragmentado e enviado através de “pacotes” (datagramas) De agora em diante você está PROIBIDO de trocar mensagens entre server e client que não sejam um datagrama 
-completo (um pacote). Isso significa que mesmo que queira enviar um único byte, deverá enviar um pacote 
-compondo um datagrama. Para isso vamos considerar o seguinte datagrama:"""
-
 
 def main():
     
@@ -33,15 +15,22 @@ def main():
         recebe = Animacao()
         com1.enable()
 
+        imageR= "./imgs/image.png"
+
+        with open(imageR, 'rb') as arquivo:
+            m= arquivo.read()
+        
         os.system("cls")
         tempo_i= time.ctime()
 
-        time.sleep(0.05)
+        print ("A transmissão vai começar!")
+        print ("A recepção vai começar!")
+
         bit_de_termino= b'\xff\xff\xff\xff'
-        lista_mensagem =[]
-        count = 1
         index = 0
         sla= 0
+        mensagem= cria_pacote(mensagem=m, estilo= 'p')
+        # mensagem= [b'pa001262--\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xc8\x00\x00\x00\x96\x08\x06\x00\x00\x00\x9b\xdc\xc7\x19\x00\x00\x00\x04gAMA\x00\x00\xb1\x8f\x0b\xfca\x05\x00\x00\x00 cHRM\x00\x00z&\x00\x00\x80\x84\x00\x00\xfa\x00\x00\x00\x80\xe8\x00\x00u0\x00\x00\xea`\x00\x00:\x98\x00\x00\x17p\x9c\xbaQ<\x00\x00\x00\x06bKGD\x00\x00\x00\x00\x00\x00\xf9C\xbb\x7f\x00\x00\x00\xff\xff\xff\xff']
         while True:
             while True:
                 if com1.rx.condicao:
@@ -49,7 +38,7 @@ def main():
                     com1.sendData(np.asarray(txBuffer[0]))
                 rxBuffer, nRx = com1.getData(1)
                 if rxBuffer.endswith(bit_de_termino):
-                    if com1.rx.condicao: recebe.enable()
+                    if com1.rx.condicao_print: recebe.printProgressBar(0, len(mensagem), prefix = 'Progress:', suffix = 'Complete', length = 50)
                     com1.clear(len(rxBuffer))
                     com1.rx.cond()
                     break
@@ -57,44 +46,35 @@ def main():
             head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
             if estilo == b'e':
-                print (index, "antes")
                 index = int(payload.decode("utf-8")) - 1
-                print (index, "depois")
-                txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
-                com1.sendData(np.asarray(txBuffer[index]))
+                
+                com1.sendData(np.asarray(mensagem[index]))
                 time.sleep(0.05)
                 index+= 1
-            
+
             elif estilo == b'v': # Tá vivo?
-                #FAZER O SEND DATA de Pode mandar! == b't'
                 txBuffer= cria_pacote(estilo= "t")
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
 
             elif estilo == b't': # Pode mandar!
-                # Fazer o SEND DATA do pacote == b'p'
-                txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
-                if index > len(txBuffer) - 1:
+                if index > len(mensagem) - 1:
                     stop= cria_pacote(estilo= "d")
                     com1.sendData(np.asarray(stop[0]))
-                    recebe.disable()
-                    time.sleep(1.8)
+                    time.sleep(0.05)
                     break
-                if sla == 5:
-                    print ("entrou")
-                    index= index + 4
-                sla+= 1
-                com1.sendData(np.asarray(txBuffer[index]))
-                index+= 1
+                # if sla == 20:
+                #     index= index + 20
+                # sla+= 1
+                com1.sendData(np.asarray(mensagem[index]))
                 time.sleep(0.05)
+                recebe.printProgressBar(index + 1, len(mensagem), prefix = 'Progress:', suffix = 'Complete', length = 50)
+                index+= 1
 
             elif estilo == b'd': # Deu tudo certo!
-                # Print Deu tudo certo!
-                recebe.disable()
-                time.sleep(1)
                 print("Deu tudo certo!")
                 break
-
+                
         tempo_f     = time.ctime()
         tempo_total = calcula_tempo(tempo_i, tempo_f)
         

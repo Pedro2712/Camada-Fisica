@@ -63,6 +63,4 @@ def desmembramento(rxBuffer):
     return head, estilo, tam_payload, contador, tamanho, payload, eop
 
 def tempo_decorrido(temp):
-    os.system("cls")
-    print ("A recepção vai começar!")
-    print (f"Tempo decorrido é: {temp}")
+    print (f'\rTempo decorrido é: {temp}', end = "\r")

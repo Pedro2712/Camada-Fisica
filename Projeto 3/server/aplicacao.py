@@ -4,6 +4,7 @@ import numpy as np
 import os
 from funcao import *
 from animacao import Animacao
+from PIL import Image
 
 serialName = "COM4"
 
@@ -13,22 +14,22 @@ def main():
     
     try:
         com1 = enlace(serialName)
-        recebe= Animacao()
-        recebe.__ini__()
+        # recebe= Animacao()
         # Ativa comunicacao. Inicia os threads e a comunicação seiral 
+        imageW= "./imgs/recebidaCopia.png"
+        
         com1.enable()
         
         os.system("cls")
-        print ("A recepção vai começar!") 
+        print ("A recepção vai começar!")
+
         # Acesso aos bytes recebidos
         bit_de_termino= b'\xff\xff\xff\xff'
         lista_mensagem =[]
         count = 1
-        index = 0
         while True:
             while True:
                 rxBuffer, nRx = com1.getData(1)
-                # if com1.rx.condicao: recebe.enable()
                 if rxBuffer.endswith(bit_de_termino):
                     com1.rx.cond()
                     com1.clear(len(rxBuffer))
@@ -37,20 +38,9 @@ def main():
             
             head, estilo, tam_payload, contador, tamanho, payload, eop = desmembramento(rxBuffer)
 
-            contador_erro=1
             if estilo == b'v': # Tá vivo?
                 txBuffer= cria_pacote(estilo= 't')
                 com1.sendData(np.asarray(txBuffer[0]))
-                time.sleep(0.5)
-
-            elif estilo == b't': # Pode mandar!
-                txBuffer= cria_pacote(mensagem=mensagem, estilo= 'p')
-                if index > len(txBuffer) - 1:
-                    stop= cria_pacote(estilo= "d")
-                    com1.sendData(np.asarray(stop[0]))
-                    break
-                com1.sendData(np.asarray(txBuffer[index]))
-                index+= 1
                 time.sleep(0.05)
 
             elif estilo == b'p': # Pacote
@@ -64,19 +54,17 @@ def main():
                     time.sleep(0.05)
                     count+= 1
                 else:
-                    print ("ERRO!")
-                    txBuffer= cria_pacote(mensagem=str(count), estilo= 'e')
-                    com1.sendData(np.asarray(txBuffer[0]))
-                    time.sleep(0.05)
-                    if contador_erro == 3:
+                    print ("\033[31mERRO!\033[m")
+                    if tam_payload != len(payload):
+                        print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
                         break
-                    contador_erro+=1
+                    else:
+                        txBuffer= cria_pacote(mensagem=str(count), estilo= 'e')
+                        com1.sendData(np.asarray(txBuffer[0]))
+                        time.sleep(0.05)
                 
 
             elif estilo == b'd': # Deu tudo certo!
-                # Print Deu tudo certo!
-                recebe.disable()
-                time.sleep(1.5)
                 txBuffer= cria_pacote(estilo= 'd')
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
@@ -84,16 +72,20 @@ def main():
                 print("Deu tudo certo!")
                 break
         
-        frase= b''
+        imagem= b''
         for i in lista_mensagem:
-            frase= frase + i
-        frase= frase.decode("utf-8")
+            imagem= imagem + i
+        
+        with open(imageW, 'wb') as f:
+            f.write(imagem)
+
+        im= Image.open("./imgs/recebidaCopia.png")
+        im.show()
 
         # Encerra comunicação
         print("-" * 50)
         print("Comunicação encerrada!")
         print("-" * 50)
-        print(f"A frase enviada foi:\n{frase}")
         com1.disable()
         
     except Exception as erro:

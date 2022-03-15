@@ -21,8 +21,8 @@ class fisica(object):
     def __init__(self, name):
         self.name        = name
         self.port        = None
-        # self.baudrate    = 115200
-        self.baudrate    = 9600
+        self.baudrate    = 115200
+        # self.baudrate    = 9600
         self.bytesize    = serial.EIGHTBITS
         self.parity      = serial.PARITY_NONE
         self.stop        = serial.STOPBITS_ONE
@@ -90,5 +90,5 @@ class fisica(object):
             nRx = len(rxBuffer)
             return(rxBufferDecoded, nRx)
         except :
-            print("[ERRO] interfaceFisica, read, decode. buffer : {}".format(rxBufferValid))
+            # print("[ERRO] interfaceFisica, read, decode. buffer : {}".format(rxBufferValid))
             return(b"", 0)
