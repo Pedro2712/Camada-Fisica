@@ -11,7 +11,7 @@ serialName = "COM3"
 def main():
     
     try:
-        com1 = enlace(serialName)
+        com1 = enlace(serialName) 
         recebe = Animacao()
         com1.enable()
 
