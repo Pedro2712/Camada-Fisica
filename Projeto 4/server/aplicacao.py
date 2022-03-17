@@ -6,7 +6,7 @@ from funcao import *
 from animacao import Animacao
 from PIL import Image
 
-serialName = "COM5"
+serialName = "COM4"
 
 mensagem = """sapucaiba sapucaiba"""
 
@@ -15,7 +15,7 @@ def main():
     try:
         com1 = enlace(serialName)
         # recebe= Animacao()
-        # Ativa comunicacao. Inicia os threads e a comunicação seiral 
+        # Ativa comunicacao. Inicia os threads e a comunicação serial
         imageW= "./imgs/recebidaCopia.png"
         
         com1.enable()
@@ -24,7 +24,7 @@ def main():
         print ("A recepção vai começar!")
 
         # Acesso aos bytes recebidos
-        bit_de_termino= b'\xff\xff\xff\xff'
+        bit_de_termino= b'\xAA\xBB\xCC\xDD'
         lista_mensagem =[]
         count = 1
         while True:
@@ -44,22 +44,23 @@ def main():
                 time.sleep(0.05)
 
             elif estilo == b'p': # Pacote
+                print(time.ctime())
                 print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
                 print(f"contador do payload: {contador}, contador real: {count}, TOTAL: {tamanho}")
                 print("-"*50)
                 if contador == count and tam_payload == len(payload):
                     lista_mensagem.append(payload)
-                    txBuffer= cria_pacote(estilo= 't')
+                    txBuffer= cria_pacote(estilo= 't', ultimo=count-1)
                     com1.sendData(np.asarray(txBuffer[0]))
                     time.sleep(0.05)
                     count+= 1
                 else:
                     print ("\033[31mERRO!\033[m")
                     if tam_payload != len(payload):
-                        print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
+                        # print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
                         break
                     else:
-                        txBuffer= cria_pacote(mensagem=str(count), estilo= 'e')
+                        txBuffer= cria_pacote(estilo= 'e', erro=count, ultimo=count-1)
                         com1.sendData(np.asarray(txBuffer[0]))
                         time.sleep(0.05)
                 

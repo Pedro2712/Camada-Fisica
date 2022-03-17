@@ -8,12 +8,17 @@
 ####################################################
 
 # Importa pacote de tempo
+import os
 import time
 
 # Threads
 import threading
+
 import enlaceTx as tx
 import funcao as fc
+import aplicacao as ap
+
+import time
 
 # Class
 class RX(object):
@@ -25,6 +30,7 @@ class RX(object):
         self.threadMutex = True
         self.READLEN     = 1024
         self.condicao    = True
+        self.condicao_print    = True
 
     def thread(self): 
         while not self.threadStop:
@@ -70,9 +76,10 @@ class RX(object):
         # self.clearBuffer() # Zera o buffer
         self.threadResume()
         return(b)
-    
+
     def cond(self):
-        self.condicao= False
+        self.condicao_print = False
+        self.condicao       = False
     
     def getCondicao(self):
         return self.condicao
@@ -82,11 +89,16 @@ class RX(object):
         while self.getBufferLen() < size:
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
-            if self.condicao: fc.tempo_decorrido(tempo_total)
-            if tempo_total == "00:00:30":
-                print("-" * 50)
-                print ("Time Out", "\U0001F615")
-                return
+            if self.condicao_print: fc.tempo_decorrido(tempo_total)
+            if tempo_total == "00:00:05":
+                os.system("cls")
+                resposta= input("Servidor inativo. Tentar novamente? s/n ")
+                if resposta== "n":
+                    print("-" * 50)
+                    print ("Time Out", "\U0001F615")
+                    return
+                self.condicao= True
+                return b''
             time.sleep(0.05)
         return(self.getBuffer())
 
