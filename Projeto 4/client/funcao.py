@@ -1,5 +1,5 @@
 import math
-import os
+import time
 
 # Calcula o tempo total da transmissão dos dados, ou seja, o tempo inicial menos o tempo final
 def calcula_tempo(tempo_i, tempo_f):
@@ -64,11 +64,19 @@ def desmembramento(rxBuffer):
     tam_payload = head[5]
     erro = head[6]
     ultimo = head[7]
+    tam_datagrama= len(rxBuffer)
 
     payload = rxBuffer[10:-4]
     eop = rxBuffer[tam_payload+10:]
 
-    return head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop
+    return head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop, tam_datagrama
 
 def tempo_decorrido(temp):
     print (f'\rTempo decorrido é: {temp}', end = "\r")
+
+def printao(tipo= "receb", estilo= 1, contador= 1, tamanho= 1, tam_datagrama= 14):
+    x= "-"*100
+    if tipo=="envia":
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC\n{x}"
+    else:
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama}\n{x}"
