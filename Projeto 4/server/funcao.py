@@ -43,12 +43,12 @@ def cria_pacote(mensagem= "", estilo= 1, erro=0, ultimo=0):
     tamanho= math.ceil(len(mensagem)/114)
 
     pacote= b''; contador= 1; eop= b'\xAA\xBB\xCC\xDD'
-    lista_datagrama= [header(estilo=estilo, ultimo=ultimo) + pacote + eop]
+    lista_datagrama= [header(estilo=estilo, ultimo=ultimo, erro=erro) + pacote + eop]
     for count, i in enumerate(mensagem):
         pacote+= i.to_bytes(1, byteorder='big')
         if len(pacote) == 114 or count == len(mensagem)-1:
             print(ultimo)
-            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo, erro=erro)
+            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo)
             
             datagrama= head + pacote + eop
             lista_datagrama.append(datagrama)
@@ -77,8 +77,8 @@ def tempo_decorrido(temp):
     print (f'\rTempo decorrido é: {temp}', end = "\r")
 
 def printao(tipo= "receb", estilo= 0, contador= 0, tamanho= 0, tam_datagrama= 0):
+    x="-"*100
     if tipo=="receb":
-        print(f"{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC")
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC\n{x}"
     else:
-        print(f"{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama}")
-    print("-"*100)
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama}\n{x}"

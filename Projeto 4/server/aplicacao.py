@@ -8,8 +8,6 @@ from PIL import Image
 
 serialName = "COM5"
 
-mensagem = """sapucaiba sapucaiba"""
-
 def main():
     
     try:
@@ -17,12 +15,15 @@ def main():
         # recebe= Animacao()
         # Ativa comunicacao. Inicia os threads e a comunicação serial
         imageW= "./imgs/recebidaCopia.png"
+        texto = "./text/texto.txt"
         
         com1.enable()
         
         os.system("cls")
-        print ("A recepção vai começar!")
+        print ("A recepção vai começar!\n")
 
+        logg=""
+        
         # Acesso aos bytes recebidos
         bit_de_termino= b'\xAA\xBB\xCC\xDD'
         lista_mensagem =[]
@@ -34,10 +35,12 @@ def main():
                 if com1.rx.timeout == True:
                     txBuffer= cria_pacote(estilo= 5) #envia Timeout
                     com1.sendData(np.asarray(txBuffer[0]))
-                    printao(tipo="envio", estilo= 5, tam_datagrama=len(txBuffer[0]))
+                    print(printao(tipo="envio", estilo= 5, tam_datagrama=len(txBuffer[0])))
+                    logg+=printao(tipo="envio", estilo= 5, tam_datagrama=len(txBuffer[0]))
                     time.sleep(0.05)
                     print("-" * 100)
                     print ("Time Out", "\U0001F615")
+                    logg+="\nTime Out\n"+"-"*100
                     condicao= False
                 if rxBuffer.endswith(bit_de_termino):
                     com1.rx.cond()
@@ -46,53 +49,64 @@ def main():
                 time.sleep(0.05)
             
             head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop, tam_datagrama = desmembramento(rxBuffer)
-            printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama)
-            if estilo == 1: #recebe Ta vivo?
-                txBuffer= cria_pacote(estilo= 24) #envia Ok
+            print(printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama))
+            logg+=printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama)
+            if estilo == 1 and len(lista_mensagem)==0: #recebe Ta vivo?
+                txBuffer= cria_pacote(estilo= 2) #envia To vivo
                 com1.sendData(np.asarray(txBuffer[0]))
-                printao(tipo="envio", estilo= 24, tam_datagrama=len(txBuffer[0]))
+                print(printao(tipo="envio", estilo= 2, tam_datagrama=len(txBuffer[0])))
+                logg+=printao(tipo="envio", estilo= 2, tam_datagrama=len(txBuffer[0]))
                 time.sleep(0.05)
 
             elif estilo == 3: #recebe Ok
                 if contador == count and tam_payload == len(payload):
                     lista_mensagem.append(payload)
-                    txBuffer= cria_pacote(estilo= 24, ultimo=count-1) #envia Pacote
+                    txBuffer= cria_pacote(estilo= 4, ultimo=count) #envia Pacote
                     com1.sendData(np.asarray(txBuffer[0]))
-                    printao(tipo="envio", estilo= 24, tam_datagrama=len(txBuffer[0]))
+                    print(printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0])))
+                    logg+=printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0]))
                     time.sleep(0.05)
+
+
                     count+= 1
                 else:
                     print ("\033[31mERRO!\033[m")
+                    logg+="\nERRO\n"+"-"*100
                     if tam_payload != len(payload):
                         print(f"\nErro no tamanho do payload do pacote: {contador} / tamanho correto: {len(payload)}/ tamanho recebido: {tam_payload}")
                         txBuffer= cria_pacote(estilo= 7) #envia Fim
                         com1.sendData(np.asarray(txBuffer[0]))
                         print("-" * 100)
-                        printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
+                        print(printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0])))
+                        logg+=printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
                         time.sleep(0.05)
                         break
                     else:
-                        txBuffer= cria_pacote(estilo= 6, erro=count, ultimo=count-1) #envia Erro
+                        txBuffer= cria_pacote(estilo= 6, erro=count-1, ultimo=count) #envia Erro
                         com1.sendData(np.asarray(txBuffer[0]))
                         print()
-                        printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0]))
+                        print(printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0])))
+                        logg+=printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0]))
                         time.sleep(0.05)
 
             elif estilo == 5: #recebe Timeout
                 time.sleep(0.05)
                 os.system("cls")
                 print("Timeout sem handshack!")
+                logg+="\nTimeout sem handshack!\n"+"-"*100
                 break
                 
 
             elif estilo == 7: #recebe Fim 
                 txBuffer= cria_pacote(estilo= 7) #envia Fim
                 com1.sendData(np.asarray(txBuffer[0]))
-                printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
+                print(printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0])))
+                logg+=printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
                 time.sleep(0.05)
                 os.system("cls")
                 print("-"*100)
                 print("Deu tudo certo!")
+                logg+="\nDeu tudo certo!\n"+"-"*100
                 break
         
         imagem= b''
@@ -105,6 +119,7 @@ def main():
         # im= Image.open("./imgs/recebidaCopia.png")
         # im.show()
 
+
         # Encerra comunicação
         print("-" * 50)
         print("Comunicação encerrada!")
@@ -116,6 +131,8 @@ def main():
         print(erro)
         com1.disable()
         
+    with open(texto, 'w') as f:
+        f.write(logg)
 
     # Só roda o main quando for executado do terminal ... se for chamado dentro de outro modulo nao roda
 if __name__ == "__main__":
