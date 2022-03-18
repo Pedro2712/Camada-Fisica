@@ -17,50 +17,58 @@ def calcula_tempo(tempo_i, tempo_f):
     
     horas     = str(int((tempo/3600))).rjust(2, '0')
     minutos   = str(int((tempo%3600)/60)).rjust(2, '0')
-    segundos  = str((tempo%3600)%60).rjust(2, '0')
+    segundos  = str((tempo%3600)%60).rjust(2, '0') 
 
     return f"{horas}:{minutos}:{segundos}"
 
-def header(contador= "001", tamanho= "001", tam_payload= 0, estilo= "v"):
+def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= 1, erro=0, ultimo=0):
     ############################################################################################
-    # Ordem adotado no Head: estilo, tam_payload, contador, tamanho, desconhecido, deconhecido #
+    # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, livre, erro, ultimo, livre, livre #
+    # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, tam_payload, erro, ultimo, livre, livre #
     ############################################################################################
-    # 3 contador, 3 tamanho, 1 tam_pacotes, 1 estilo, 2 desconhecidos
-    head= bytes(estilo, encoding= "utf-8") + tam_payload.to_bytes(1, byteorder='big') + bytes(f"{contador}{tamanho}--", encoding= "utf-8")
+    if estilo == 3 :
+        head= estilo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
+                contador.to_bytes(1, byteorder='big') + tam_payload.to_bytes(1, byteorder='big') + erro.to_bytes(1, byteorder='big') + \
+                ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
+        return head
+        
+    head= estilo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
+        contador.to_bytes(1, byteorder='big') + bytes("-", encoding="utf-8") + erro.to_bytes(1, byteorder='big') + \
+        ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
     return head
-
     
-def cria_pacote(mensagem= "", estilo= "v"):
+def cria_pacote(mensagem= "", estilo= "v", erro=0, ultimo=0):
     # mensagem= bytes(mensagem, encoding= "utf-8")
-    tamanho= str(math.ceil(len(mensagem)/114)).rjust(3, '0')
+    tamanho= math.ceil(len(mensagem)/114)
 
-    pacote= b''; contador= 1; eop= b'\xff\xff\xff\xff'
+    pacote= b''; contador= 1; eop= b'\xAA\xBB\xCC\xDD'
     lista_datagrama= [header(estilo=estilo) + pacote + eop]
     for count, i in enumerate(mensagem):
         pacote+= i.to_bytes(1, byteorder='big')
         if len(pacote) == 114 or count == len(mensagem)-1:
-            contador= str(contador).rjust(3, '0')
-            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo)
+            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo, erro=erro, ultimo=ultimo)
             
             datagrama= head + pacote + eop
             lista_datagrama.append(datagrama)
             
-            pacote= b''
-            contador= int(contador) + 1
+            pacote = b''
+            contador += 1
         if count == len(mensagem)-1: lista_datagrama.pop(0)
     return lista_datagrama
 
 def desmembramento(rxBuffer):
     head = rxBuffer[:10]
-    tam_payload = head[1]
+    estilo = head[0].to_bytes(1,byteorder='big')
+    tamanho = head[3]
+    contador = head[4]
+    tam_payload = head[5]
+    erro = head[6]
+    ultimo = head[7]
+
     payload = rxBuffer[10:-4]
     eop = rxBuffer[tam_payload+10:]
 
-    estilo = head[0].to_bytes(1,byteorder='big')
-    contador = int(head[2:5])
-    tamanho = int(head[5:8])
-
-    return head, estilo, tam_payload, contador, tamanho, payload, eop
+    return head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop
 
 def tempo_decorrido(temp):
     print (f'\rTempo decorrido é: {temp}', end = "\r")

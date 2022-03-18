@@ -29,12 +29,12 @@ def main():
         bit_de_termino= b'\xff\xff\xff\xff'
         index = 0
         sla= 0
-        mensagem= cria_pacote(mensagem=m, estilo= 'p')
+        mensagem= cria_pacote(mensagem=m, estilo= 3)
         # mensagem= [b'pa001262--\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\xc8\x00\x00\x00\x96\x08\x06\x00\x00\x00\x9b\xdc\xc7\x19\x00\x00\x00\x04gAMA\x00\x00\xb1\x8f\x0b\xfca\x05\x00\x00\x00 cHRM\x00\x00z&\x00\x00\x80\x84\x00\x00\xfa\x00\x00\x00\x80\xe8\x00\x00u0\x00\x00\xea`\x00\x00:\x98\x00\x00\x17p\x9c\xbaQ<\x00\x00\x00\x06bKGD\x00\x00\x00\x00\x00\x00\xf9C\xbb\x7f\x00\x00\x00\xff\xff\xff\xff']
         while True:
             while True:
                 if com1.rx.condicao:
-                    txBuffer= cria_pacote()
+                    txBuffer= cria_pacote() #envia Ta vivo?
                     com1.sendData(np.asarray(txBuffer[0]))
                 rxBuffer, nRx = com1.getData(1)
                 if rxBuffer.endswith(bit_de_termino):
@@ -43,35 +43,35 @@ def main():
                     com1.rx.cond()
                     break
                 time.sleep(0.05)
-            head, estilo, tam_pacotes, contador, tamanho, payload, eop = desmembramento(rxBuffer)
+            head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop = desmembramento(rxBuffer)
 
-            if estilo == b'e':
-                index = int(payload.decode("utf-8")) - 1
+            if estilo == 6: #recebe Erro
+                index = ultimo
                 
-                com1.sendData(np.asarray(mensagem[index]))
+                com1.sendData(np.asarray(mensagem[index])) #envia Pacote
                 time.sleep(0.05)
                 index+= 1
 
-            elif estilo == b'v': # Tá vivo?
-                txBuffer= cria_pacote(estilo= "t")
+            elif estilo == 1: #recebe Ta vivo?
+                txBuffer= cria_pacote(estilo= 2) #envia Ok
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
 
-            elif estilo == b't': # Pode mandar!
+            elif estilo == 2: #recebe Ok
                 if index > len(mensagem) - 1:
-                    stop= cria_pacote(estilo= "d")
+                    stop= cria_pacote(estilo= 7) #envia Fim
                     com1.sendData(np.asarray(stop[0]))
                     time.sleep(0.05)
                     break
                 # if sla == 20:
                 #     index= index + 20
                 # sla+= 1
-                com1.sendData(np.asarray(mensagem[index]))
+                com1.sendData(np.asarray(mensagem[index])) #envia Pacote
                 time.sleep(0.05)
                 recebe.printProgressBar(index + 1, len(mensagem), prefix = 'Progress:', suffix = 'Complete', length = 50)
                 index+= 1
 
-            elif estilo == b'd': # Deu tudo certo!
+            elif estilo == 7: #recebe Fim
                 print("Deu tudo certo!")
                 break
                 

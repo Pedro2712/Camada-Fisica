@@ -21,20 +21,20 @@ def calcula_tempo(tempo_i, tempo_f):
 
     return f"{horas}:{minutos}:{segundos}"
 
-def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= "v", erro=0, ultimo=0):
+def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= 1, erro=0, ultimo=0):
     ############################################################################################
     # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, livre, erro, ultimo, livre, livre #
     # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, tam_payload, erro, ultimo, livre, livre #
     ############################################################################################
-    if estilo == "v":
-        head= bytes(estilo, encoding= "utf-8")+ bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
-            contador.to_bytes(1, byteorder='big') + bytes("-", encoding="utf-8") + erro.to_bytes(1, byteorder='big') + \
-            ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
+    if estilo == 3 :
+        head= estilo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
+                contador.to_bytes(1, byteorder='big') + tam_payload.to_bytes(1, byteorder='big') + erro.to_bytes(1, byteorder='big') + \
+                ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
         return head
         
-    head= bytes(estilo, encoding= "utf-8")+ bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
-            contador.to_bytes(1, byteorder='big') + tam_payload.to_bytes(1, byteorder='big') + erro.to_bytes(1, byteorder='big') + \
-            ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
+    head= estilo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8") + tamanho.to_bytes(1, byteorder='big') + \
+        contador.to_bytes(1, byteorder='big') + bytes("-", encoding="utf-8") + erro.to_bytes(1, byteorder='big') + \
+        ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
     return head
     
 def cria_pacote(mensagem= "", estilo= "v", erro=0, ultimo=0):

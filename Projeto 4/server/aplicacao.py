@@ -36,21 +36,21 @@ def main():
                     break
                 time.sleep(0.05)
             
-            head, estilo, tam_payload, contador, tamanho, payload, eop = desmembramento(rxBuffer)
+            head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop = desmembramento(rxBuffer)
 
-            if estilo == b'v': # Tá vivo?
-                txBuffer= cria_pacote(estilo= 't')
+            if estilo == 1: #recebe Ta vivo?
+                txBuffer= cria_pacote(estilo= 24) #envia Ok
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
 
-            elif estilo == b'p': # Pacote
+            elif estilo == 24: #recebe Ok
                 print(time.ctime())
                 print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
                 print(f"contador do payload: {contador}, contador real: {count}, TOTAL: {tamanho}")
                 print("-"*50)
                 if contador == count and tam_payload == len(payload):
                     lista_mensagem.append(payload)
-                    txBuffer= cria_pacote(estilo= 't', ultimo=count-1)
+                    txBuffer= cria_pacote(estilo= 3, ultimo=count-1) #envia Pacote
                     com1.sendData(np.asarray(txBuffer[0]))
                     time.sleep(0.05)
                     count+= 1
@@ -60,13 +60,13 @@ def main():
                         # print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
                         break
                     else:
-                        txBuffer= cria_pacote(estilo= 'e', erro=count, ultimo=count-1)
-                        com1.sendData(np.asarray(txBuffer[0]))
+                        txBuffer= cria_pacote(estilo= 6, erro=count, ultimo=count-1) #envia Erro
+                        com1.sendData(np.asarray(txBuffer[0])) 
                         time.sleep(0.05)
                 
 
-            elif estilo == b'd': # Deu tudo certo!
-                txBuffer= cria_pacote(estilo= 'd')
+            elif estilo == 7: #recebe Fim 
+                txBuffer= cria_pacote(estilo= 7) #envia Fim
                 com1.sendData(np.asarray(txBuffer[0]))
                 time.sleep(0.05)
                 os.system("cls")
