@@ -14,6 +14,8 @@ import time
 # Threads
 import threading
 
+from pyrsistent import b
+
 import enlaceTx as tx
 import funcao as fc
 import aplicacao as ap
@@ -24,13 +26,14 @@ import time
 class RX(object):
   
     def __init__(self, fisica):
-        self.fisica      = fisica
-        self.buffer      = bytes(bytearray())
-        self.threadStop  = False
-        self.threadMutex = True
-        self.READLEN     = 1024
-        self.condicao    = True
+        self.fisica            = fisica
+        self.buffer            = bytes(bytearray())
+        self.threadStop        = False
+        self.threadMutex       = True
+        self.READLEN           = 1024
+        self.condicao          = True
         self.condicao_print    = True
+        self.timeout           = 1
 
     def thread(self): 
         while not self.threadStop:
@@ -73,13 +76,13 @@ class RX(object):
         # Pausa o thread
         self.threadPause()
         b           = self.buffer # Salva os dados do buffer na variavel b
-        # self.clearBuffer() # Zera o buffer
         self.threadResume()
         return(b)
 
     def cond(self):
         self.condicao_print = False
         self.condicao       = False
+        self.timeout        = 1
     
     def getCondicao(self):
         return self.condicao
@@ -91,12 +94,9 @@ class RX(object):
             tempo_total= fc.calcula_tempo(time_i, time_f)
             if self.condicao_print: fc.tempo_decorrido(tempo_total)
             if tempo_total == "00:00:05":
-                os.system("cls")
-                resposta= input("Servidor inativo. Tentar novamente? s/n ")
-                if resposta== "n":
-                    print("-" * 50)
-                    print ("Time Out", "\U0001F615")
-                    return
+                if self.timeout== 4:
+                    return b'\xFF\xFF\xFF\xFF'
+                self.timeout+= 1
                 self.condicao= True
                 return b''
             time.sleep(0.05)

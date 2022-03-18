@@ -37,16 +37,16 @@ def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= 1, erro=0, ultimo=0)
         ultimo.to_bytes(1, byteorder='big') + bytes("--", encoding="utf-8")
     return head
     
-def cria_pacote(mensagem= "", estilo= "v", erro=0, ultimo=0):
+def cria_pacote(mensagem= "", estilo= 1, erro=0, ultimo=0):
     # mensagem= bytes(mensagem, encoding= "utf-8")
     tamanho= math.ceil(len(mensagem)/114)
 
     pacote= b''; contador= 1; eop= b'\xAA\xBB\xCC\xDD'
-    lista_datagrama= [header(estilo=estilo) + pacote + eop]
+    lista_datagrama= [header(estilo=estilo, ultimo=ultimo) + pacote + eop]
     for count, i in enumerate(mensagem):
         pacote+= i.to_bytes(1, byteorder='big')
         if len(pacote) == 114 or count == len(mensagem)-1:
-            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo, erro=erro, ultimo=ultimo)
+            head= header(contador=contador, tamanho=tamanho, tam_payload=len(pacote), estilo=estilo, erro=erro)
             
             datagrama= head + pacote + eop
             lista_datagrama.append(datagrama)
@@ -58,7 +58,7 @@ def cria_pacote(mensagem= "", estilo= "v", erro=0, ultimo=0):
 
 def desmembramento(rxBuffer):
     head = rxBuffer[:10]
-    estilo = head[0].to_bytes(1,byteorder='big')
+    estilo = head[0]
     tamanho = head[3]
     contador = head[4]
     tam_payload = head[5]
