@@ -6,7 +6,7 @@ from funcao import *
 from animacao import Animacao
 from PIL import Image
 
-serialName = "COM4"
+serialName = "COM5"
 
 mensagem = """sapucaiba sapucaiba"""
 
@@ -27,49 +27,71 @@ def main():
         bit_de_termino= b'\xAA\xBB\xCC\xDD'
         lista_mensagem =[]
         count = 1
-        while True:
-            while True:
+        condicao= True
+        while condicao:
+            while condicao:
                 rxBuffer, nRx = com1.getData(1)
+                if com1.rx.timeout == True:
+                    txBuffer= cria_pacote(estilo= 5) #envia Timeout
+                    com1.sendData(np.asarray(txBuffer[0]))
+                    printao(tipo="envio", estilo= 5, tam_datagrama=len(txBuffer[0]))
+                    time.sleep(0.05)
+                    print("-" * 100)
+                    print ("Time Out", "\U0001F615")
+                    condicao= False
                 if rxBuffer.endswith(bit_de_termino):
                     com1.rx.cond()
                     com1.clear(len(rxBuffer))
                     break
                 time.sleep(0.05)
             
-            head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop = desmembramento(rxBuffer)
-
+            head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop, tam_datagrama = desmembramento(rxBuffer)
+            printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama)
             if estilo == 1: #recebe Ta vivo?
                 txBuffer= cria_pacote(estilo= 24) #envia Ok
                 com1.sendData(np.asarray(txBuffer[0]))
+                printao(tipo="envio", estilo= 24, tam_datagrama=len(txBuffer[0]))
                 time.sleep(0.05)
 
-            elif estilo == 24: #recebe Ok
-                print(time.ctime())
-                print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
-                print(f"contador do payload: {contador}, contador real: {count}, TOTAL: {tamanho}")
-                print("-"*50)
+            elif estilo == 3: #recebe Ok
                 if contador == count and tam_payload == len(payload):
                     lista_mensagem.append(payload)
-                    txBuffer= cria_pacote(estilo= 3, ultimo=count-1) #envia Pacote
+                    txBuffer= cria_pacote(estilo= 24, ultimo=count-1) #envia Pacote
                     com1.sendData(np.asarray(txBuffer[0]))
+                    printao(tipo="envio", estilo= 24, tam_datagrama=len(txBuffer[0]))
                     time.sleep(0.05)
                     count+= 1
                 else:
                     print ("\033[31mERRO!\033[m")
                     if tam_payload != len(payload):
-                        # print(f"tamanho do payload: {tam_payload}, tamanho real: {len(payload)}")
+                        print(f"\nErro no tamanho do payload do pacote: {contador} / tamanho correto: {len(payload)}/ tamanho recebido: {tam_payload}")
+                        txBuffer= cria_pacote(estilo= 7) #envia Fim
+                        com1.sendData(np.asarray(txBuffer[0]))
+                        print("-" * 100)
+                        printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
+                        time.sleep(0.05)
                         break
                     else:
                         txBuffer= cria_pacote(estilo= 6, erro=count, ultimo=count-1) #envia Erro
-                        com1.sendData(np.asarray(txBuffer[0])) 
+                        com1.sendData(np.asarray(txBuffer[0]))
+                        print()
+                        printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0]))
                         time.sleep(0.05)
+
+            elif estilo == 5: #recebe Timeout
+                time.sleep(0.05)
+                os.system("cls")
+                print("Timeout sem handshack!")
+                break
                 
 
             elif estilo == 7: #recebe Fim 
                 txBuffer= cria_pacote(estilo= 7) #envia Fim
                 com1.sendData(np.asarray(txBuffer[0]))
+                printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
                 time.sleep(0.05)
                 os.system("cls")
+                print("-"*100)
                 print("Deu tudo certo!")
                 break
         

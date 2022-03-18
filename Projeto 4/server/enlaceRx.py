@@ -25,6 +25,7 @@ class RX(object):
         self.threadMutex = True
         self.READLEN     = 1024
         self.condicao    = True
+        self.timeout     = False
 
     def thread(self): 
         while not self.threadStop:
@@ -67,12 +68,11 @@ class RX(object):
         # Pausa o thread
         self.threadPause()
         b           = self.buffer # Salva os dados do buffer na variavel b
-        # self.clearBuffer() # Zera o buffer
         self.threadResume()
         return(b)
     
     def cond(self):
-        self.condicao= False
+        self.condicao = False
     
     def getCondicao(self):
         return self.condicao
@@ -83,10 +83,9 @@ class RX(object):
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
             if self.condicao: fc.tempo_decorrido(tempo_total)
-            if tempo_total == "00:00:30":
-                print("-" * 50)
-                print ("Time Out", "\U0001F615")
-                return
+            if tempo_total == "00:00:20":
+                self.timeout= True
+                return b''
             time.sleep(0.05)
         return(self.getBuffer())
 
