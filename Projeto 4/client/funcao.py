@@ -71,8 +71,8 @@ def desmembramento(rxBuffer):
 
     return head, estilo, tamanho, contador, tam_payload, erro, ultimo, payload, eop, tam_datagrama
 
-def tempo_decorrido(temp):
-    print (f'\rTempo decorrido é: {temp}', end = "\r")
+def tempo_decorrido(temp, aonde):
+    print (f'\rTempo decorrido é: {temp} {aonde}/4', end = "\r")
 
 def printao(tipo= "receb", estilo= 1, contador= 1, tamanho= 1, tam_datagrama= 14):
     x= "-"*100

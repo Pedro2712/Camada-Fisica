@@ -1,4 +1,3 @@
-from cmath import log
 from enlace import *
 import time
 import numpy as np
@@ -88,9 +87,9 @@ def main():
                     log+= printao(tipo= "envia", estilo= 7, tam_datagrama= len(stop[0]))
                     time.sleep(0.05)
                     break
-                # if sla == 10:
-                #     index= index + 20
-                # sla+= 1
+                if sla == 10:
+                    index= index + 20
+                sla+= 1
                 com1.sendData(np.asarray(mensagem[index])) #envia Pacote
                 log+= printao(tipo= "envia", estilo= 3, contador= index + 1, tamanho= len(mensagem), tam_datagrama= len(mensagem[index]))
                 time.sleep(0.05)

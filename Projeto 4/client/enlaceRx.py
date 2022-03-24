@@ -92,7 +92,7 @@ class RX(object):
         while self.getBufferLen() < size:
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
-            if self.condicao_print: fc.tempo_decorrido(tempo_total)
+            if self.condicao_print: fc.tempo_decorrido(tempo_total, self.timeout)
             if tempo_total == "00:00:05":
                 if self.timeout== 4:
                     return b'\xFF\xFF\xFF\xFF'
