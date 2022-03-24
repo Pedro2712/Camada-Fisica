@@ -12,6 +12,7 @@ import time
 
 # Threads
 import threading
+
 import enlaceTx as tx
 import funcao as fc
 
@@ -24,8 +25,8 @@ class RX(object):
         self.threadStop  = False
         self.threadMutex = True
         self.READLEN     = 1024
-        self.condicao    = True
-        self.timeout     = False
+        self.condicao    = False
+        self.timeout     = 1
 
     def thread(self): 
         while not self.threadStop:
@@ -73,6 +74,7 @@ class RX(object):
     
     def cond(self):
         self.condicao = False
+        self.timeout  = 1
     
     def getCondicao(self):
         return self.condicao
@@ -83,8 +85,11 @@ class RX(object):
             time_f= time.ctime()
             tempo_total= fc.calcula_tempo(time_i, time_f)
             if self.condicao: fc.tempo_decorrido(tempo_total)
-            if tempo_total == "00:00:20":
-                self.timeout= True
+            if tempo_total == "00:00:02":
+                if self.timeout== 10:
+                    return b'\xFF\xFF\xFF\xFF'
+                self.timeout+= 1
+                self.condicao= True
                 return b''
             time.sleep(0.05)
         return(self.getBuffer())

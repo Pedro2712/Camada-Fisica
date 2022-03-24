@@ -18,7 +18,7 @@ def main():
         texto = "./text/texto.txt"
         
         com1.enable()
-        
+
         os.system("cls")
         print ("A recepção vai começar!\n")
 
@@ -28,11 +28,18 @@ def main():
         bit_de_termino= b'\xAA\xBB\xCC\xDD'
         lista_mensagem =[]
         count = 1
+        index= 0
         condicao= True
         while condicao:
             while condicao:
                 rxBuffer, nRx = com1.getData(1)
-                if com1.rx.timeout == True:
+                if index!= 0 and com1.rx.condicao:
+                    txBuffer= cria_pacote(estilo= 4, ultimo=count) #envia Pacote
+                    com1.sendData(np.asarray(txBuffer[0]))
+                    print(printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0])))
+                    logg+=printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0]))
+                    time.sleep(0.05)
+                if rxBuffer == b'\xFF\xFF\xFF\xFF':
                     txBuffer= cria_pacote(estilo= 5) #envia Timeout
                     com1.sendData(np.asarray(txBuffer[0]))
                     print(printao(tipo="envio", estilo= 5, tam_datagrama=len(txBuffer[0])))
@@ -43,6 +50,7 @@ def main():
                     logg+="\nTime Out\n"+"-"*100
                     condicao= False
                 if rxBuffer.endswith(bit_de_termino):
+                    index= 1
                     com1.rx.cond()
                     com1.clear(len(rxBuffer))
                     break
@@ -66,21 +74,20 @@ def main():
                     print(printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0])))
                     logg+=printao(tipo="envio", estilo= 4, tam_datagrama=len(txBuffer[0]))
                     time.sleep(0.05)
-
-
+                    
                     count+= 1
                 else:
                     print ("\033[31mERRO!\033[m")
                     logg+="\nERRO\n"+"-"*100
                     if tam_payload != len(payload):
-                        print(f"\nErro no tamanho do payload do pacote: {contador} / tamanho correto: {len(payload)}/ tamanho recebido: {tam_payload}")
-                        txBuffer= cria_pacote(estilo= 7) #envia Fim
+                        print(f"\nErro no tamanho do payload do pacote: {contador} / tamanho payload correto: {len(payload)}/ tamanho payload recebido: {tam_payload}")
+                        txBuffer= cria_pacote(estilo= 6) #envia Erro
                         com1.sendData(np.asarray(txBuffer[0]))
                         print("-" * 100)
-                        print(printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0])))
-                        logg+=printao(tipo="envio", estilo= 7, tam_datagrama=len(txBuffer[0]))
+                        print(printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0])))
+                        logg+=printao(tipo="envio", estilo= 6, tam_datagrama=len(txBuffer[0]))
                         time.sleep(0.05)
-                        break
+                        
                     else:
                         txBuffer= cria_pacote(estilo= 6, erro=count-1, ultimo=count) #envia Erro
                         com1.sendData(np.asarray(txBuffer[0]))
