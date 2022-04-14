@@ -6,7 +6,7 @@ from funcao import *
 from animacao import Animacao
 from PIL import Image
 
-serialName = "COM5"
+serialName = "COM4"
 
 def main():
     
@@ -57,8 +57,8 @@ def main():
                 time.sleep(0.05)
             
             head, estilo, tamanho, contador, tam_payload, erro, ultimo, crc, payload, eop, tam_datagrama = desmembramento(rxBuffer)
-            print(printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama))
-            logg+=printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama)
+            print(printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama, crc=crc))
+            logg+=printao(tipo="receb", estilo= estilo, contador=contador,tamanho=tamanho ,tam_datagrama=tam_datagrama, crc=crc)
             if estilo == 1 and len(lista_mensagem)==0: #recebe Ta vivo?
                 txBuffer= cria_pacote(estilo= 2) #envia To vivo
                 com1.sendData(np.asarray(txBuffer[0]))

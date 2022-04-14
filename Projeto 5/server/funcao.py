@@ -82,10 +82,10 @@ def desmembramento(rxBuffer):
 def tempo_decorrido(temp):
     print (f'\rTempo decorrido é: {temp}', end = "\r")
 
-def printao(tipo= "receb", estilo= 0, contador= 0, tamanho= 0, tam_datagrama= 0):
+def printao(tipo= "receb", estilo= 0, contador= 0, tamanho= 0, tam_datagrama= 0, crc=bytes("--", encoding="utf-8")):
     x="-"*100
     if tipo=="receb":
-        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC\n{x}"
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC: {crc}\n{x}"
     else:
         return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama}\n{x}"
 
