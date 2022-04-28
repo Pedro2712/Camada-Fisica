@@ -22,7 +22,7 @@ def calcula_tempo(tempo_i, tempo_f):
 
     return f"{horas}:{minutos}:{segundos}"
 
-def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= 1, erro=0, ultimo=0, crc=bytes("--", encoding="utf-8")):
+def header(contador= 1, tamanho= 1, tam_payload= 0, estilo= 1, erro=0, ultimo=0, crc=b'\x00\x00'):
     ############################################################################################
     # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, livre, erro, ultimo, CRC, CRC #
     # Ordem adotado no Head: estilo, livre, livre, tamanho, contador, tam_payload, erro, ultimo, CRC, CRC #
@@ -81,9 +81,9 @@ def desmembramento(rxBuffer):
 def tempo_decorrido(temp, aonde):
     print (f'\rTempo decorrido é: {temp} {aonde}/4', end = "\r")
 
-def printao(tipo= "receb", estilo= 1, contador= 1, tamanho= 1, tam_datagrama= 14):
+def printao(tipo= "receb", estilo= 1, contador= 1, tamanho= 1, tam_datagrama= 14, crc= 'CRC'):
     x= "-"*100
     if tipo=="envia":
-        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / CRC\n{x}"
+        return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama} / contador: {contador} / tamanho: {tamanho} / crc: {crc}\n{x}"
     else:
         return f"\n{time.ctime()} / {tipo} / estilo: {estilo} / tam_data: {tam_datagrama}\n{x}"
