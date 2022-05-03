@@ -26,7 +26,7 @@ int sw_uart_receive_byte(due_sw_uart *uart, char* data) {
   // wait start bit
   while(digitalRead(uart->pin_rx) == HIGH)
   {
-    Serial.println("esperando byte");
+//    Serial.println("esperando byte");
   }
 
   Serial.println("\nchegou byte");

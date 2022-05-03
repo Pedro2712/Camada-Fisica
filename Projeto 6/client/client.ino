@@ -1,13 +1,14 @@
+int paridade;
 void setup() {
   // put your setup code here, to run once:
   // 01100001 = a
   // 01000001 = A
   
   pinMode(2, OUTPUT);
-  char letra = 'a';
+  char letra = 'e';
 
-  int paridade= parity(letra)
-  Serial.println(paridade);
+  paridade= parity(letra);
+//  Serial.println(paridade);
 }
 
 void loop() {
@@ -16,7 +17,7 @@ void loop() {
   digitalWrite(2, LOW);
   espera();
 
-  digitalWrite(2, HIGH);
+  digitalWrite(2, LOW);
   espera();
 
   digitalWrite(2, LOW);
