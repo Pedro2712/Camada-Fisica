@@ -10,6 +10,7 @@ import sounddevice as sd
 import matplotlib.pyplot as plt
 import time
 import peakutils
+import funcoes_LPF as fc
 
 #funcao para transformas intensidade acustica em dB
 def todB(s):
@@ -18,77 +19,49 @@ def todB(s):
 
 
 def main():
-
     #declare um objeto da classe da sua biblioteca de apoio (cedida)   
-    bola   = signalMeu()
-    musica = "som/queen.wav" 
-    
+    bola = signalMeu()
+
     sd.default.samplerate = 44100 #taxa de amostragem
-    sd.default.channels = 2
-    duration = 3
-
-    print(f"Captação de som irar começar em {duration} segundos....")
-    time.sleep(duration)
+    sd.default.channels = 2  #voce pode ter que alterar isso dependendo da sua placa
+    duration = 5 #tempo em segundos que ira aquisitar o sinal acustico captado pelo mic
    
-    #declare uma variavel "duracao" com a duracao em segundos da gravacao. poucos segundos ... 
+   #faca um print informando que a gravacao foi inicializada
+    # print("-"*50)
+    # print("Gravação iniciada")
+    # print("-"*50)
 
-    #calcule o numero de amostras "numAmostras" que serao feitas (numero de aquisicoes)
     freqAmos    = 44100
     numAmostras = freqAmos*duration
+    freqCorte   = 2500
+    freq        = 13000
 
-    audio = sd.rec(musica, freqAmos, channels=1)
+    input("Quer comecar ? ")
+    audio = sd.rec(int(numAmostras), freqAmos, channels=1)
     sd.wait()
-    # print("FIM!!!!")
-    # #analise sua variavel "audio". pode ser um vetor com 1 ou 2 colunas, lista ...
-    # #grave uma variavel com apenas a parte que interessa (dados)
-    # # use a funcao linspace e crie o vetor tempo. Um instante correspondente a cada amostra!
-    # tempo = np.linspace(0, duration, duration*freqAmos)
 
-    # # plot do gravico  áudio vs tempo!
-    # plt.plot(tempo, audio[:,0])
-    # plt.xlabel("Tempo")
-    # plt.ylabel("Audio")
-    
-    # ## Calcula e exibe o Fourier do sinal audio. como saida tem-se a amplitude e as frequencias
-    # x, y = bola.calcFFT(audio[:,0], freqAmos)
+    sd.play(audio, freqAmos)
+    sd.wait()
 
-    # plt.figure("F(y)")
-    # plt.plot(x,y)
-    # plt.grid()
-    # plt.title('Fourier audio')
-   
-    # index = peakutils.indexes(y, thres = 0.3 , min_dist = 100)
-    
-    # #printe os picos encontrados!  
-    # print(f"Os picos são: {index}")
-    # valoresPico=[]
-    # for freq in x[index]:
-    #     valoresPico.append(freq)
-
-    # tolerancia = 50
-    # freqMin = [697, 770, 852, 941]; freqMax = [1206, 1339, 1477, 1633]
-    # linha = 0; coluna = 0
-    # for pico in valoresPico:
-    #     for value in freqMin:
-    #         if value-tolerancia < pico < value+tolerancia:
-    #             linha = value
-    #     for value2 in freqMax:
-    #         if value2-tolerancia < pico < value2+tolerancia:
-    #             coluna = value2
-
-    # #encontre na tabela duas frequencias proximas às frequencias de pico encontradas e descubra qual foi a tecla
-    
-    # print(f"A frequencia encontrados foram de: {coluna}")
-    # # print(linha)
-    
-    # key_list = list(DTMF.keys())
-    # val_list = list(DTMF.values())
-
-    # posicao = val_list.index([linha,coluna])
-    # print(f"tecla: {key_list[posicao]}")
-
-    # ## Exibe gráficos
+    bola.plotFFT(audio[:,0], freqAmos)
+    plt.title("audio Capitado")
     # plt.show()
+
+    x, s = bola.generateSin(freq, 1, 5, freqAmos)
+
+    tone = audio[:,0]*s
+    print (max(tone), min(tone))
+    bola.plotFFT(tone, freqAmos)
+    plt.title("audio com o seno")
+    # plt.show()
+
+    filter = fc.LPF(tone, freqCorte, freqAmos)
+    bola.plotFFT(filter, freqAmos)
+    plt.title("audio filtrado")
+    plt.show()
+
+    sd.play(filter, freqAmos)
+    sd.wait()
 
 if __name__ == "__main__":
     main()
